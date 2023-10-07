@@ -237,11 +237,101 @@ ratSA = cS[-1]/cA[-1]
 
 cDcA = [0] * 5
 allfit = [0] * 5
-times = [2, 10, 18, 29, 40]
+times = [2, 9, 18, 34, 40]
 for i in range(len(times)):
     cDcA[i] = cD[times[i]] + cA[times[i]]
     allfit[i] = cD[times[i]] + cA[times[i]] + cA[times[i]] + X[times[i]] + db[times[i]]
 
+t5=np.array(times)
 
 
+# find exponential trend curve of Cd+cA vs t5
+from scipy.optimize import curve_fit
+def func(t5, a, b, c):
+    return a * np.exp(-b * t5) + c
+popt, pcov = curve_fit(func, t5, cDcA)
 
+#plot regression curve
+plt.figure(7)
+plt.plot(t5, cDcA, 'o')
+tgrid = np.linspace(0, 40, 100)
+plt.plot(tgrid, func(tgrid, *popt), 'r-')
+plt.xlabel('t [days]')
+plt.ylabel('cD+cA')
+plt.title('cD+cA vs time')
+plt.grid()
+plt.show()
+
+#find kDcA
+kDcA = popt[1]
+print(kDcA)
+
+#find half life
+half_life = np.log(2)/kDcA
+print(half_life)
+
+#see below for half life calculations for comparison. it is important to notice this is a best fit based on few data points,
+# and not the actual half life of the system.A variation from the actual half life is expected.
+
+# find exponential trend curve of allfit vs t5
+from scipy.optimize import curve_fit
+def func(t5, a, b, c):
+    return a * np.exp(-b *t5) + c
+popt, pcov = curve_fit(func, t5, allfit)
+#plot regression curve
+plt.figure(7)
+plt.plot(t5, allfit, 'o')
+tgrid = np.linspace(0, 40, 100)
+plt.plot(tgrid, func(tgrid, *popt), 'r-')
+plt.xlabel('t [days]')
+plt.ylabel('allfit')
+plt.title('allfit vs time')
+plt.grid()
+plt.show()
+#find kDcA
+kallfit = popt[1]
+print(kDcA)
+#find half life
+half_life = np.log(2)/kallfit
+print(half_life)
+
+#make list with all indices of the variable t 
+alltimes=np.arange(len(t))
+cDcAall = [0] * len(t)
+allfit = [0] * len(t)
+#calculate cDcA and allfit for all times contained in t
+for i in range(len(t)):
+    cDcAall[i] = cD[alltimes[i]] + cA[alltimes[i]]
+    allfit[i] = cD[alltimes[i]] + cA[alltimes[i]] + cA[alltimes[i]] + X[alltimes[i]] + db[alltimes[i]]
+
+#x cDcAall
+
+#verify half time calculations by extracting at what t the concentration of cDcA is half of the initial concentration
+#find initial concentration
+cDcAall0=cDcAall[0]
+print(cDcAall0)
+#find closest value to half of initial concentration
+cDcA_half = cDcAall0/2
+#find indices of t where cDcA is half of initial concentration
+idx = (np.abs(cDcAall - cDcA_half)).argmin()
+print(cDcAall[idx])
+print(t[idx])
+print(cDcA_half)
+print(idx)
+
+#x allfit
+
+#verify half time calculations by extracting at what t the concentration of cDcA is half of the initial concentration
+#find initial concentration
+allfit0=allfit[0]
+print(allfit0)
+#find closest value to half of initial concentration
+allfit_half = allfit0/2
+#find indices of t where cDcA is half of initial concentration
+idx = (np.abs(allfit - allfit_half)).argmin()
+print(allfit[idx])
+print(t[idx])
+print(allfit_half)
+
+
+print(idx)
